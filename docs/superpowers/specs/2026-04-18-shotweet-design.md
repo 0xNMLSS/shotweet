@@ -198,6 +198,8 @@ Mapped from scraper failures to human-readable messages, e.g.:
 
 Viewport is 1080×1920 (matches the 9:16 soft-target so the page lays out without forcing internal scroll for short posters; element-level screenshot still captures the full height for long ones).
 
+The browser context is created with `deviceScaleFactor = POSTER_PIXEL_RATIO` (env, clamped to `[1, 3]`, default **3**). Layout still happens in 1080 CSS px, but Chromium rasterizes at 3× density, so a short 1080×1350 CSS poster ships as a 3240×4050 PNG with sharp text on @2x/@3x phones. The `width`/`height` returned to API consumers are the **physical PNG dimensions** (CSS box × pixelRatio), so `/api/poster` and `/api/media` always describe the file on disk truthfully.
+
 1. Reuse the same Playwright `Browser`.
 2. `page.goto('http://localhost:3000/render/<id>')` on the in-process Next.js server.
 3. `await page.waitForLoadState('networkidle')` to ensure media loaded.

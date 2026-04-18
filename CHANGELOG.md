@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Poster screenshots now render at **3× device-pixel-ratio** by default (configurable via `POSTER_PIXEL_RATIO`, clamped `[1, 3]`). A 1080×1350 CSS poster ships as a 3240×4050 PNG so body text and avatars stay sharp on @2x/@3x phones. The `width`/`height` returned by `/api/poster` and `/api/media` reflect the **physical PNG size**, so existing consumers see truthful dimensions. File size grows ~6-9× over 1×; lower the env to `2` (≈3-5MB) or `1` (original) when bandwidth matters.
 - Brand footer is a **single line** of plain text (no link), default English: `shotweet from xxlemon · An app for better screenshots of your tweets.` Optional `SHOTWEET_FOOTER_TAGLINE` replaces the whole line. (Earlier: two-line Chinese tagline; `SHOTWEET_BRAND_REPO_URL` already removed from poster/compose.)
 - Poster timestamp and engagement labels are now **English** (`10:34 PM · Apr 18, 2026` style; stats: replies / reposts / likes). Timestamps still use `Asia/Shanghai` for deterministic formatting.
 - Poster aspect ratio: enforce a **4:5 floor** (`min-h-[1350px]`) and let content grow naturally above it; very long tweets keep working as long-screenshot PNGs (no truncation). The container is now a flex column so `BrandFooter` stays pinned to the bottom of the canvas regardless of how short the body is. Renderer viewport bumped from 1080×1600 to 1080×1920 to accommodate the new floor without forcing internal scroll.

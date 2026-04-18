@@ -14,6 +14,8 @@ Each asset object exposes `id / sourceUrl / downloadUrl / contentType / filename
 
 Internal rendering uses `INTERNAL_RENDER_HOST` (default `http://localhost:3000`) so Playwright can load `/render/<id>` before screenshotting `#poster`.
 
+PNGs render at `POSTER_PIXEL_RATIO` (default **3**, clamped `[1, 3]`). The CSS layout stays at 1080 px wide, but Chromium rasterizes at 3× density for sharp text on @2x/@3x phones (a 1080×1350 CSS poster ships as a 3240×4050 PNG). Lower it to `2` (≈3-5 MB) or `1` (≈1-2 MB) when bandwidth matters; `width`/`height` in API responses always describe the physical PNG.
+
 Generated posters include a single-line plain-text brand footer (default: `shotweet from xxlemon · An app for better screenshots of your tweets.`). Override the whole line with `SHOTWEET_FOOTER_TAGLINE` in `.env.example`. A subtle X mark appears at the end of the engagement stats row inside the PNG; the homepage preview is the same image with no extra overlay.
 
 ## Local development
