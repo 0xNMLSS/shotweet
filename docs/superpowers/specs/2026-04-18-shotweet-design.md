@@ -162,7 +162,7 @@ Mapped from scraper failures to human-readable messages, e.g.:
   - Quoted tweet: nested card with `1px solid #2f3336`, body text reduced to 13px, no nested stats.
   - Timestamp line: `下午 H:MM · YYYY年M月D日`.
   - Stats row above a top border: `<n> 评论 · <n> 转发 · <n> 赞`.
-  - Brand footer: `shotweet.app · 𝕏` in muted gray, 10px.
+  - Brand footer (muted gray, 10px): copy **shotweet from xxlemon**, where **xxlemon** is a link to the public GitHub repository (not a product domain yet). Example: `shotweet from [xxlemon](https://github.com/xxlemon/shotweet)` — exact org/repo path is configurable and may change when the repo is published; until then use env default below.
 - Fonts: PingFang SC on macOS during dev; Noto Sans SC + Noto Color Emoji installed in the Docker image for production parity.
 - The page exposes a `<div id="poster">` container that the screenshotter targets.
 
@@ -253,6 +253,7 @@ shotweet/
   - `POSTER_TTL_SECONDS` (default 3600) — cleanup age
   - `MAX_CONCURRENT_RENDERS` (default 2) — protects single-instance Chromium
   - `INTERNAL_RENDER_HOST` (default `http://localhost:3000`) — for the screenshot self-call
+  - `SHOTWEET_BRAND_REPO_URL` (default `https://github.com/xxlemon/shotweet`) — URL used for the **xxlemon** link in the poster footer; update when the public repo URL is finalized
 
 ## 11. Testing Strategy (high-level)
 
