@@ -27,7 +27,7 @@ describe("PosterGeneratorForm", () => {
           width: 1080,
           height: 2418,
           provider: "twitter",
-          type: "poster",
+          type: "image",
         },
       }),
     } as Response);

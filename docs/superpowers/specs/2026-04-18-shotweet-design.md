@@ -68,9 +68,11 @@ The Playwright instance is reused across requests via a small browser pool (one 
 
 ## 6. API Contract
 
-The shape mirrors MultiMediaSaver `/api/media` so iPhone Shortcuts built for MultiMediaSaver can be adapted with minimal changes.
+Two POST endpoints share the same scrape + render pipeline (`lib/api/buildPoster.ts`) and only differ in response shape. Use `/api/media` for MultiMediaSaver-shaped consumers (iPhone Shortcuts), `/api/poster` for the in-app web UI.
 
-### 6.1 `POST /api/poster`
+### 6.1 `POST /api/media` (MultiMediaSaver-compatible)
+
+Drop-in replacement for the MultiMediaSaver endpoint of the same name: same path, same request body, same `{ ok, assets[] }` envelope.
 
 Request:
 
@@ -79,6 +81,31 @@ Request:
 ```
 
 Success response (HTTP 200):
+
+```json
+{
+  "ok": true,
+  "assets": [
+    {
+      "id": "0a7c8c2d-4f2f-4c12-8d0f-7f4b4f4a2f16",
+      "sourceUrl": "https://x.com/sama/status/1234567890",
+      "downloadUrl": "/posters/1776507035-abcd1234.png",
+      "contentType": "image/png",
+      "filename": "1776507035-abcd1234.png",
+      "width": 1080,
+      "height": 2418,
+      "provider": "twitter",
+      "type": "image"
+    }
+  ]
+}
+```
+
+`assets` is always an array (length 1 today; reserved for future variants). `type: "image"` matches MultiMediaSaver so existing Shortcut branches keep working. `width` / `height` are shotweet-specific extras a Shortcut can ignore.
+
+### 6.2 `POST /api/poster` (web UI)
+
+Same request body as `/api/media`. Response uses a singular `asset` so the homepage preview reads `data.asset.downloadUrl` directly:
 
 ```json
 {
@@ -92,12 +119,14 @@ Success response (HTTP 200):
     "width": 1080,
     "height": 2418,
     "provider": "twitter",
-    "type": "poster"
+    "type": "image"
   }
 }
 ```
 
-Error response (HTTP 4xx/5xx):
+### 6.3 Errors
+
+Both endpoints share the MultiMediaSaver error envelope:
 
 ```json
 {
@@ -106,13 +135,16 @@ Error response (HTTP 4xx/5xx):
 }
 ```
 
-`downloadUrl` is relative; clients prepend the host when sharing externally. This matches the MultiMediaSaver convention exactly.
+- `400` — `Invalid URL provided` (validation failure).
+- `5xx` — scraper / renderer error, message propagated.
 
-### 6.2 `GET /posters/<filename>`
+`downloadUrl` is relative; clients prepend the host when sharing externally.
+
+### 6.4 `GET /posters/<filename>`
 
 Returns the PNG binary with `Content-Type: image/png`. Used by the Web UI preview (`<img src>`) and by Shortcuts that follow the returned `downloadUrl`.
 
-### 6.3 Errors
+### 6.5 Error mapping
 
 Mapped from scraper failures to human-readable messages, e.g.:
 

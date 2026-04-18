@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `POST /api/media` MultiMediaSaver-compatible endpoint: same path, request body, and `{ ok, assets[] }` envelope as MultiMediaSaver's `/api/media`, so iPhone Shortcuts wired for that project work against shotweet without changes. Returns a single-element `assets` array containing the rendered poster PNG.
 - Docker Compose image with Playwright Chromium and a persistent `tmp/posters` volume.
 - `POST /api/poster` JSON API (tweet URL → PNG metadata), Playwright `renderPosterImage` screenshot to `tmp/posters/`, and `GET /posters/[filename]` for PNG download/preview.
 - Next.js 14 (App Router) app shell with Tailwind CSS, ESLint (`next/core-web-vitals`), Jest + Testing Library (`jest --runInBand`), and a smoke-tested homepage (title, tweet URL field, Generate button).
@@ -26,5 +27,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Asset `type` field renamed from `"poster"` to `"image"` to match MultiMediaSaver, so existing Shortcut branches on `assets[i].type === "image"` keep working.
 - Poster X mark moved from a large bottom-right pill to a subtle inline icon at the right edge of the stats row; the previous overlay was visually intrusive. Removed the homepage preview overlay so the black pill does not duplicate the mark already baked into the PNG.
 - Design spec: poster brand footer is **shotweet from xxlemon** with the GitHub repo link `https://github.com/0xNMLSS/shotweet`, not a standalone product URL.

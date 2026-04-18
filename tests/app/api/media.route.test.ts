@@ -10,7 +10,7 @@ jest.mock("@/lib/renderer/screenshot", () => ({
   renderPosterImage: jest.fn(),
 }));
 
-import { POST } from "@/app/api/poster/route";
+import { POST } from "@/app/api/media/route";
 import { renderPosterImage } from "@/lib/renderer/screenshot";
 import { scrapeTweet } from "@/lib/scraper/twitter";
 import type { TweetData } from "@/lib/scraper/types";
@@ -33,12 +33,12 @@ const sampleTweet: TweetData = {
   createdAt: "2025-04-18T12:00:00.000Z",
 };
 
-describe("POST /api/poster", () => {
+describe("POST /api/media (MultiMediaSaver-compatible)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("returns ok and asset payload when scrape and render succeed", async () => {
+  it("returns assets array with a single PNG poster asset", async () => {
     mockedScrapeTweet.mockResolvedValue(sampleTweet);
     mockedRenderPosterImage.mockResolvedValue({
       filename: "1713542400000-a1b2c3d4.png",
@@ -46,7 +46,7 @@ describe("POST /api/poster", () => {
       height: 2000,
     });
 
-    const req = new Request("http://localhost/api/poster", {
+    const req = new Request("http://localhost/api/media", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: "https://x.com/sama/status/1913240824012345678" }),
@@ -56,75 +56,39 @@ describe("POST /api/poster", () => {
     expect(res.status).toBe(200);
     const json = (await res.json()) as {
       ok: boolean;
-      asset: {
+      assets: Array<{
         id: string;
         sourceUrl: string;
         downloadUrl: string;
         contentType: string;
         filename: string;
-        width: number;
-        height: number;
         provider: string;
         type: string;
-      };
+        width: number;
+        height: number;
+      }>;
     };
 
     expect(json.ok).toBe(true);
-    expect(json.asset).toMatchObject({
+    expect(Array.isArray(json.assets)).toBe(true);
+    expect(json.assets).toHaveLength(1);
+    expect(json.assets[0]).toMatchObject({
       sourceUrl: sampleTweet.url,
       downloadUrl: "/posters/1713542400000-a1b2c3d4.png",
       contentType: "image/png",
       filename: "1713542400000-a1b2c3d4.png",
-      width: 1080,
-      height: 2000,
       provider: "twitter",
       type: "image",
+      width: 1080,
+      height: 2000,
     });
-    expect(json.asset.id).toMatch(
+    expect(json.assets[0]!.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     );
-    expect(mockedScrapeTweet).toHaveBeenCalledWith("https://x.com/sama/status/1913240824012345678");
-    expect(mockedRenderPosterImage).toHaveBeenCalledTimes(1);
-    const renderId = mockedRenderPosterImage.mock.calls[0]?.[0];
-    expect(renderId).toBe(json.asset.id);
   });
 
-  it("returns ok false when scrapeTweet throws", async () => {
-    mockedScrapeTweet.mockRejectedValue(new Error("Tweet not found"));
-
-    const req = new Request("http://localhost/api/poster", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: "https://x.com/sama/status/1913240824012345678" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(500);
-    const json = (await res.json()) as { ok: boolean; message: string };
-    expect(json.ok).toBe(false);
-    expect(json.message).toBe("Tweet not found");
-    expect(mockedRenderPosterImage).not.toHaveBeenCalled();
-  });
-
-  it("returns ok false when renderPosterImage throws", async () => {
-    mockedScrapeTweet.mockResolvedValue(sampleTweet);
-    mockedRenderPosterImage.mockRejectedValue(new Error("screenshot failed"));
-
-    const req = new Request("http://localhost/api/poster", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: "https://x.com/sama/status/1913240824012345678" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(500);
-    const json = (await res.json()) as { ok: boolean; message: string };
-    expect(json.ok).toBe(false);
-    expect(json.message).toBe("screenshot failed");
-  });
-
-  it("returns 400 when body url is invalid", async () => {
-    const req = new Request("http://localhost/api/poster", {
+  it("returns 400 with mediasaver-style message when url is invalid", async () => {
+    const req = new Request("http://localhost/api/media", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: "not-a-url" }),
@@ -133,8 +97,23 @@ describe("POST /api/poster", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const json = (await res.json()) as { ok: boolean; message: string };
-    expect(json.ok).toBe(false);
-    expect(json.message).toBe("Invalid request body.");
+    expect(json).toEqual({ ok: false, message: "Invalid URL provided" });
     expect(mockedScrapeTweet).not.toHaveBeenCalled();
+  });
+
+  it("returns ok:false when scrapeTweet fails", async () => {
+    mockedScrapeTweet.mockRejectedValue(new Error("Tweet not found"));
+
+    const req = new Request("http://localhost/api/media", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: "https://x.com/sama/status/1913240824012345678" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+    const json = (await res.json()) as { ok: boolean; message: string };
+    expect(json).toEqual({ ok: false, message: "Tweet not found" });
+    expect(mockedRenderPosterImage).not.toHaveBeenCalled();
   });
 });
