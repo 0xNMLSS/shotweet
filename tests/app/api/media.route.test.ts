@@ -29,7 +29,7 @@ const sampleTweet: TweetData = {
   },
   body: { text: "Hello", entities: [] },
   media: [],
-  stats: { replies: 1, retweets: 2, likes: 3 },
+  stats: { replies: 1, retweets: 2, likes: 3, views: 0 },
   createdAt: "2025-04-18T12:00:00.000Z",
 };
 

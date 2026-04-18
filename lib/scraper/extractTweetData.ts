@@ -66,6 +66,41 @@ function parseTweetNode(tweet: Element, url: string): TweetData {
     return 0;
   };
 
+  /** View/impression count — X uses `data-testid="analytics"` and/or localized aria-labels. */
+  const readViews = (): number => {
+    const inScope = (node: Element) => !innerQuote || !innerQuote.contains(node);
+
+    const fromAria = (aria: string): number | null => {
+      let m = aria.match(/([\d.,]+\s*[KMB]?)\s+views?\b/i);
+      if (m) return parseCompactNumber(m[1]!);
+      m = aria.match(/([\d.,]+\s*[KMB]?)次观看/);
+      if (m) return parseCompactNumber(m[1]!);
+      m = aria.match(/观看[：:\s]*([\d.,]+\s*[KMB]?)/);
+      if (m) return parseCompactNumber(m[1]!);
+      return null;
+    };
+
+    for (const el of Array.from(tweet.querySelectorAll('[data-testid="analytics"]')).filter(inScope)) {
+      const aria = el.getAttribute("aria-label") ?? "";
+      const n = fromAria(aria);
+      if (n !== null) return n;
+    }
+
+    for (const el of Array.from(tweet.querySelectorAll("a, button")).filter(inScope)) {
+      const aria = el.getAttribute("aria-label") ?? "";
+      const n = fromAria(aria);
+      if (n !== null) return n;
+    }
+
+    for (const el of Array.from(tweet.querySelectorAll('[role="group"][aria-label]')).filter(inScope)) {
+      const label = el.getAttribute("aria-label") ?? "";
+      const n = fromAria(label);
+      if (n !== null) return n;
+    }
+
+    return 0;
+  };
+
   const statusLink = tweet.querySelector('a[href*="/status/"]');
   const body =
     tweet.querySelector('[data-testid="tweetText"]')?.textContent?.trim() ?? "";
@@ -105,6 +140,7 @@ function parseTweetNode(tweet: Element, url: string): TweetData {
       replies: readCount("reply", "repl"),
       retweets: readCount("retweet", "repost"),
       likes: readCount("like", "like"),
+      views: readViews(),
     },
     createdAt: tweet.querySelector("time")?.getAttribute("datetime") ?? new Date(0).toISOString(),
   };

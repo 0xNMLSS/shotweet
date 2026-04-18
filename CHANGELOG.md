@@ -26,6 +26,10 @@ All notable changes to this project will be documented in this file.
 - Poster aspect ratio: enforce a **4:5 floor** (`min-h-[1350px]`) and let content grow naturally above it; very long tweets keep working as long-screenshot PNGs (no truncation). The container is now a flex column so `BrandFooter` stays pinned to the bottom of the canvas regardless of how short the body is. Renderer viewport bumped from 1080×1600 to 1080×1920 to accommodate the new floor without forcing internal scroll.
 - Media layout: every tweet image is now stacked vertically at full poster width with its natural aspect ratio (applies to 1/2/3/4 images alike), replacing the per-count X-style mosaic grids. Reads more naturally in a tall mobile-friendly canvas and avoids cropping faces.
 
+### Added
+
+- `stats.views` on `TweetData`: parsed from the analytics row (`data-testid="analytics"`) and/or `aria-label` patterns for English *views* / Chinese *次观看*; shown on the poster as **views** next to likes.
+
 ### Fixed
 
 - Stats parser: read reply / repost / like counts from `[data-testid="reply|retweet|like"]` aria-labels (previous selector missed `<button>` and tripped on the toolbar group's combined aria-label, producing `0 / 0` or three identical numbers). Also handles compact `1.2K` / `3M` / `1.5B` suffixes.

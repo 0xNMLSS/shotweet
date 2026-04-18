@@ -14,6 +14,9 @@ export default function TweetStats({ stats }: { stats: TweetData["stats"] }) {
       <span>
         <span className="font-medium text-zinc-300">{formatCount(stats.likes)}</span> likes
       </span>
+      <span>
+        <span className="font-medium text-zinc-300">{formatCount(stats.views)}</span> views
+      </span>
       <XLogoBadge className="ml-auto" />
     </div>
   );

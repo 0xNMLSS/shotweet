@@ -14,7 +14,7 @@ describe("extractTweetData", () => {
       id: "1913240824012345678",
       author: { handle: "sama" },
       media: [{ type: "image" }],
-      stats: { replies: 2432, retweets: 18700, likes: 92000 },
+      stats: { replies: 2432, retweets: 18700, likes: 92000, views: 50000 },
     });
   });
 
@@ -47,7 +47,22 @@ describe("extractTweetData", () => {
       </article>
     `;
     const result = extractTweetData(html, "https://x.com/Liyu0109/status/2041084860052406782");
-    expect(result.stats).toEqual({ replies: 92, retweets: 34, likes: 1234 });
+    expect(result.stats).toEqual({ replies: 92, retweets: 34, likes: 1234, views: 27000 });
+  });
+
+  it("parses views from Chinese 次观看 aria-label", () => {
+    const html = `
+      <article data-testid="tweet">
+        <div data-testid="User-Name"><span>User</span></div>
+        <a href="https://x.com/u/status/1">View</a>
+        <div data-testid="tweetText">hi</div>
+        <img src="https://pbs.twimg.com/profile_images/1/avatar.jpg" alt="" />
+        <a href="#" data-testid="analytics" aria-label="9487次观看"><span>9.5K</span></a>
+        <time datetime="2026-04-06T09:25:00.000Z">x</time>
+      </article>
+    `;
+    const result = extractTweetData(html, "https://x.com/u/status/1");
+    expect(result.stats.views).toBe(9487);
   });
 
   it("parses compact K/M counts from button text when aria-label is missing", () => {
@@ -64,6 +79,6 @@ describe("extractTweetData", () => {
       </article>
     `;
     const result = extractTweetData(html, "https://x.com/foo/status/1913240824012345678");
-    expect(result.stats).toEqual({ replies: 1200, retweets: 3_000_000, likes: 500 });
+    expect(result.stats).toEqual({ replies: 1200, retweets: 3_000_000, likes: 500, views: 0 });
   });
 });

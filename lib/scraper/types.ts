@@ -9,7 +9,7 @@ export type TweetData = {
   author: { name: string; handle: string; avatar: string; verified: boolean };
   body: { text: string; entities: TweetEntity[] };
   media: { type: "image"; src: string; alt?: string }[];
-  stats: { replies: number; retweets: number; likes: number };
+  stats: { replies: number; retweets: number; likes: number; views: number };
   createdAt: string;
   quoted?: TweetData;
 };
