@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - `POST /api/poster` (MultiMediaSaver-style JSON) and `GET /posters/[filename]` for PNG download; Playwright screenshot pipeline writes under `tmp/posters/`.
 - Client-side homepage flow: paste URL, generate, preview poster, download PNG.
 - Exported PNG posters include a subtle X mark at the right end of the stats row (same asset as the web preview `<img>`, no duplicate overlay).
+- `stats.views` on `TweetData`: parsed from `aria-label` text (English *views* / Chinese *次观看*), including **combined** engagement summaries on wrapper `div`s (logged-out X often omits `data-testid="analytics"`). Shown on the poster as **views** next to likes.
 
 ### Changed
 
@@ -26,12 +27,9 @@ All notable changes to this project will be documented in this file.
 - Poster aspect ratio: enforce a **4:5 floor** (`min-h-[1350px]`) and let content grow naturally above it; very long tweets keep working as long-screenshot PNGs (no truncation). The container is now a flex column so `BrandFooter` stays pinned to the bottom of the canvas regardless of how short the body is. Renderer viewport bumped from 1080×1600 to 1080×1920 to accommodate the new floor without forcing internal scroll.
 - Media layout: every tweet image is now stacked vertically at full poster width with its natural aspect ratio (applies to 1/2/3/4 images alike), replacing the per-count X-style mosaic grids. Reads more naturally in a tall mobile-friendly canvas and avoids cropping faces.
 
-### Added
-
-- `stats.views` on `TweetData`: parsed from the analytics row (`data-testid="analytics"`) and/or `aria-label` patterns for English *views* / Chinese *次观看*; shown on the poster as **views** next to likes.
-
 ### Fixed
 
+- Views stuck at `0` when X only exposes the count inside a comma-separated engagement `aria-label` (e.g. `…, 69672 views`) on a wrapper without `role="group"` or `data-testid="analytics"` — parser now scans all `[aria-label]` nodes for `… views` / 次观看.
 - Stats parser: read reply / repost / like counts from `[data-testid="reply|retweet|like"]` aria-labels (previous selector missed `<button>` and tripped on the toolbar group's combined aria-label, producing `0 / 0` or three identical numbers). Also handles compact `1.2K` / `3M` / `1.5B` suffixes.
 - Avatar resolution: scraped `_normal.jpg` (48px) profile images are upgraded to `_400x400.jpg` so the 1080-wide poster avatar is sharp.
 - Tweet media resolution: `pbs.twimg.com/media/...` URLs are upgraded to `name=large` (or have it appended when missing) for crisp images in the exported PNG.

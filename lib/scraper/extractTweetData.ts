@@ -66,7 +66,12 @@ function parseTweetNode(tweet: Element, url: string): TweetData {
     return 0;
   };
 
-  /** View/impression count — X uses `data-testid="analytics"` and/or localized aria-labels. */
+  /**
+   * View count. X often puts **no** `data-testid="analytics"` (logged-out / new UI); instead the
+   * whole engagement row is summarized on a parent `div` aria-label like:
+   * `"108 replies, 810 reposts, 5151 likes, 164 bookmarks, 69672 views"` (no role="group").
+   * We scan every `[aria-label]` under the tweet and parse `… views` / 次观看.
+   */
   const readViews = (): number => {
     const inScope = (node: Element) => !innerQuote || !innerQuote.contains(node);
 
@@ -81,20 +86,12 @@ function parseTweetNode(tweet: Element, url: string): TweetData {
     };
 
     for (const el of Array.from(tweet.querySelectorAll('[data-testid="analytics"]')).filter(inScope)) {
-      const aria = el.getAttribute("aria-label") ?? "";
-      const n = fromAria(aria);
+      const n = fromAria(el.getAttribute("aria-label") ?? "");
       if (n !== null) return n;
     }
 
-    for (const el of Array.from(tweet.querySelectorAll("a, button")).filter(inScope)) {
-      const aria = el.getAttribute("aria-label") ?? "";
-      const n = fromAria(aria);
-      if (n !== null) return n;
-    }
-
-    for (const el of Array.from(tweet.querySelectorAll('[role="group"][aria-label]')).filter(inScope)) {
-      const label = el.getAttribute("aria-label") ?? "";
-      const n = fromAria(label);
+    for (const el of Array.from(tweet.querySelectorAll("[aria-label]")).filter(inScope)) {
+      const n = fromAria(el.getAttribute("aria-label") ?? "");
       if (n !== null) return n;
     }
 

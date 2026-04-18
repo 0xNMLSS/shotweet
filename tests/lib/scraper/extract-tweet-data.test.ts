@@ -50,6 +50,23 @@ describe("extractTweetData", () => {
     expect(result.stats).toEqual({ replies: 92, retweets: 34, likes: 1234, views: 27000 });
   });
 
+  it("parses views from combined engagement aria-label on a wrapper div (no analytics testid)", () => {
+    const html = `
+      <article data-testid="tweet">
+        <div data-testid="User-Name"><span>User</span></div>
+        <a href="https://x.com/u/status/1">View</a>
+        <div data-testid="tweetText">hi</div>
+        <img src="https://pbs.twimg.com/profile_images/1/avatar.jpg" alt="" />
+        <div aria-label="108 replies, 810 reposts, 5151 likes, 164 bookmarks, 69672 views">
+          <a href="#" data-testid="reply" aria-label="108 Replies. Reply"><span>108</span></a>
+        </div>
+        <time datetime="2026-04-06T09:25:00.000Z">x</time>
+      </article>
+    `;
+    const result = extractTweetData(html, "https://x.com/u/status/1");
+    expect(result.stats.views).toBe(69672);
+  });
+
   it("parses views from Chinese 次观看 aria-label", () => {
     const html = `
       <article data-testid="tweet">
