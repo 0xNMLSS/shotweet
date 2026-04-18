@@ -34,6 +34,13 @@ describe("TweetPoster", () => {
       .closest("div");
     expect(footer?.className).toMatch(/mt-auto/);
   });
+
+  it("uses px-10 horizontal padding so dark side bands stay tight", () => {
+    const { container } = render(<TweetPoster data={plainTweet} />);
+    const poster = container.querySelector("#poster")!;
+    expect(poster.className).toMatch(/\bpx-10\b/);
+    expect(poster.className).not.toMatch(/\bpx-16\b/);
+  });
 });
 
 describe("TweetMedia vertical stack", () => {
@@ -58,4 +65,15 @@ describe("TweetMedia vertical stack", () => {
       });
     },
   );
+
+  it("bleeds edge-to-edge via -mx-10 and drops the side border + rounded corners", () => {
+    const items = [
+      { type: "image" as const, src: "https://pbs.twimg.com/media/x.jpg?name=large", alt: "x" },
+    ];
+    const { container } = render(<TweetMedia media={items} />);
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.className).toMatch(/-mx-10/);
+    expect(wrapper.className).not.toMatch(/\bborder\b/);
+    expect(wrapper.className).not.toMatch(/rounded-/);
+  });
 });

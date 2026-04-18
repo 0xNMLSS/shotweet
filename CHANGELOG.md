@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Poster insets tightened from `px-16 py-14` to `px-10 py-12` (40px sides), and **media bleeds edge-to-edge** via `-mx-10` on the `TweetMedia` wrapper. Dark side bands shrink from ~5.9% → ~3.7% per side, and images now hit the full 1080-wide canvas with no surrounding border / rounded corners (which looked like stray strokes once flush with the edge). Text/header/quote/stats keep the inset for comfortable reading.
 - Poster screenshots now render at **3× device-pixel-ratio** by default (configurable via `POSTER_PIXEL_RATIO`, clamped `[1, 3]`). A 1080×1350 CSS poster ships as a 3240×4050 PNG so body text and avatars stay sharp on @2x/@3x phones. The `width`/`height` returned by `/api/poster` and `/api/media` reflect the **physical PNG size**, so existing consumers see truthful dimensions. File size grows ~6-9× over 1×; lower the env to `2` (≈3-5MB) or `1` (original) when bandwidth matters.
 - Brand footer is a **single line** of plain text (no link), default English: `shotweet from xxlemon · An app for better screenshots of your tweets.` Optional `SHOTWEET_FOOTER_TAGLINE` replaces the whole line. (Earlier: two-line Chinese tagline; `SHOTWEET_BRAND_REPO_URL` already removed from poster/compose.)
 - Poster timestamp and engagement labels are now **English** (`10:34 PM · Apr 18, 2026` style; stats: replies / reposts / likes). Timestamps still use `Asia/Shanghai` for deterministic formatting.
