@@ -1,0 +1,42 @@
+{
+  "id": "1913240824012345680",
+  "url": "https://x.com/sama/status/1913240824012345680",
+  "author": {
+    "name": "Sam Altman",
+    "handle": "sama",
+    "avatar": "https://pbs.twimg.com/profile_images/2222222222222222222/sama.jpg",
+    "verified": true
+  },
+  "body": {
+    "text": "Commenting on the original.",
+    "entities": []
+  },
+  "media": [],
+  "stats": {
+    "replies": 2432,
+    "retweets": 18700,
+    "likes": 92000
+  },
+  "createdAt": "2026-04-18T15:00:00.000Z",
+  "quoted": {
+    "id": "9988776655443322110",
+    "url": "https://x.com/jack/status/9988776655443322110",
+    "author": {
+      "name": "Jack",
+      "handle": "jack",
+      "avatar": "https://pbs.twimg.com/profile_images/3333333333333333333/jack.jpg",
+      "verified": false
+    },
+    "body": {
+      "text": "hello world — a short note",
+      "entities": []
+    },
+    "media": [],
+    "stats": {
+      "replies": 0,
+      "retweets": 0,
+      "likes": 0
+    },
+    "createdAt": "2018-03-21T12:00:00.000Z"
+  }
+}

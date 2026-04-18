@@ -161,7 +161,7 @@ Mapped from scraper failures to human-readable messages, e.g.:
     - 4 images: 2×2 grid.
   - Quoted tweet: nested card with `1px solid #2f3336`, body text reduced to 13px, no nested stats.
   - Timestamp line: `下午 H:MM · YYYY年M月D日`.
-  - Stats row above a top border: `<n> 评论 · <n> 转发 · <n> 赞`.
+  - Stats row above a top border: `<n> 评论 · <n> 转发 · <n> 赞`, with a subtle **X mark** (SVG, muted gray, ~16px) aligned to the **right end of the same row** (no separate overlay layer; included in the PNG screenshot).
   - Brand footer (muted gray, 10px): copy **shotweet from xxlemon**, where **xxlemon** links to the public GitHub repository: `https://github.com/0xNMLSS/shotweet`.
 - Fonts: PingFang SC on macOS during dev; Noto Sans SC + Noto Color Emoji installed in the Docker image for production parity.
 - The page exposes a `<div id="poster">` container that the screenshotter targets.

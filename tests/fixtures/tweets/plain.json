@@ -1,0 +1,27 @@
+{
+  "id": "1913240824012345678",
+  "url": "https://x.com/sama/status/1913240824012345678",
+  "author": {
+    "name": "Sam Altman",
+    "handle": "sama",
+    "avatar": "https://pbs.twimg.com/profile_images/1111111111111111111/avatar.jpg",
+    "verified": true
+  },
+  "body": {
+    "text": "Building something new.",
+    "entities": []
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "https://pbs.twimg.com/media/AbCdEfGhIjKlMnOp.jpg",
+      "alt": "stage photo"
+    }
+  ],
+  "stats": {
+    "replies": 2432,
+    "retweets": 18700,
+    "likes": 92000
+  },
+  "createdAt": "2026-04-18T14:34:00.000Z"
+}
