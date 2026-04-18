@@ -14,7 +14,7 @@ Each asset object exposes `id / sourceUrl / downloadUrl / contentType / filename
 
 Internal rendering uses `INTERNAL_RENDER_HOST` (default `http://localhost:3000`) so Playwright can load `/render/<id>` before screenshotting `#poster`.
 
-Generated posters include a small footer attribution: **shotweet from xxlemon**, with **xxlemon** linking to the GitHub repository at `https://github.com/0xNMLSS/shotweet` (configurable via `SHOTWEET_BRAND_REPO_URL`; see `.env.example`). A subtle X mark appears at the end of the engagement stats row inside the PNG; the homepage preview is the same image with no extra overlay.
+Generated posters include a single-line plain-text brand footer (default: `shotweet from xxlemon · An app for better screenshots of your tweets.`). Override the whole line with `SHOTWEET_FOOTER_TAGLINE` in `.env.example`. A subtle X mark appears at the end of the engagement stats row inside the PNG; the homepage preview is the same image with no extra overlay.
 
 ## Local development
 

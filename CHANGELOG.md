@@ -19,6 +19,13 @@ All notable changes to this project will be documented in this file.
 - Client-side homepage flow: paste URL, generate, preview poster, download PNG.
 - Exported PNG posters include a subtle X mark at the right end of the stats row (same asset as the web preview `<img>`, no duplicate overlay).
 
+### Changed
+
+- Brand footer is a **single line** of plain text (no link), default English: `shotweet from xxlemon · An app for better screenshots of your tweets.` Optional `SHOTWEET_FOOTER_TAGLINE` replaces the whole line. (Earlier: two-line Chinese tagline; `SHOTWEET_BRAND_REPO_URL` already removed from poster/compose.)
+- Poster timestamp and engagement labels are now **English** (`10:34 PM · Apr 18, 2026` style; stats: replies / reposts / likes). Timestamps still use `Asia/Shanghai` for deterministic formatting.
+- Poster aspect ratio: enforce a **4:5 floor** (`min-h-[1350px]`) and let content grow naturally above it; very long tweets keep working as long-screenshot PNGs (no truncation). The container is now a flex column so `BrandFooter` stays pinned to the bottom of the canvas regardless of how short the body is. Renderer viewport bumped from 1080×1600 to 1080×1920 to accommodate the new floor without forcing internal scroll.
+- Media layout: every tweet image is now stacked vertically at full poster width with its natural aspect ratio (applies to 1/2/3/4 images alike), replacing the per-count X-style mosaic grids. Reads more naturally in a tall mobile-friendly canvas and avoids cropping faces.
+
 ### Fixed
 
 - Stats parser: read reply / repost / like counts from `[data-testid="reply|retweet|like"]` aria-labels (previous selector missed `<button>` and tripped on the toolbar group's combined aria-label, producing `0 / 0` or three identical numbers). Also handles compact `1.2K` / `3M` / `1.5B` suffixes.
@@ -29,4 +36,4 @@ All notable changes to this project will be documented in this file.
 
 - Asset `type` field renamed from `"poster"` to `"image"` to match MultiMediaSaver, so existing Shortcut branches on `assets[i].type === "image"` keep working.
 - Poster X mark moved from a large bottom-right pill to a subtle inline icon at the right edge of the stats row; the previous overlay was visually intrusive. Removed the homepage preview overlay so the black pill does not duplicate the mark already baked into the PNG.
-- Design spec: poster brand footer is **shotweet from xxlemon** with the GitHub repo link `https://github.com/0xNMLSS/shotweet`, not a standalone product URL.
+- Design spec: poster brand footer is one plain-text line (see `SHOTWEET_FOOTER_TAGLINE`).

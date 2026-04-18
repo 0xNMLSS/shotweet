@@ -17,7 +17,10 @@ export async function renderPosterImage(renderId: string): Promise<{
 
   const browser = await getBrowser();
   const context = await browser.newContext({
-    viewport: { width: 1080, height: 1600 },
+    // Viewport >= the 4:5 minimum poster height so the page lays out without
+    // forcing an internal scroll for short tweets. Tall posters are captured
+    // via element screenshot which sees the full layout regardless of viewport.
+    viewport: { width: 1080, height: 1920 },
   });
 
   try {

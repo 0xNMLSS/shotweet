@@ -2,67 +2,29 @@ import type { TweetData } from "@/lib/scraper/types";
 
 type MediaItem = TweetData["media"][number];
 
-function MediaImg({ alt, className, src }: { alt?: string; className?: string; src: string }) {
+function MediaImg({ alt, src }: { alt?: string; src: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img alt={alt ?? ""} className={className} src={src} />
+    <img alt={alt ?? ""} className="h-auto w-full object-cover" src={src} />
   );
 }
 
+/**
+ * Render every image as a full-width vertical stack with each image's natural
+ * aspect ratio preserved. Chosen over X's mosaic grids because the poster is a
+ * tall mobile-friendly canvas where a single column reads more naturally than
+ * 2x2 thumbnails and avoids cropping faces.
+ */
 export default function TweetMedia({ media }: { media: TweetData["media"] }) {
-  if (media.length === 0) return null;
-
-  const images = media.filter((m): m is Extract<MediaItem, { type: "image" }> => m.type === "image");
+  const images = media.filter(
+    (m): m is Extract<MediaItem, { type: "image" }> => m.type === "image",
+  );
   if (images.length === 0) return null;
 
-  const n = images.length;
-
-  if (n === 1) {
-    const [m] = images;
-    return (
-      <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-800">
-        <MediaImg alt={m.alt} className="h-auto w-full object-cover" src={m.src} />
-      </div>
-    );
-  }
-
-  if (n === 2) {
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-1 overflow-hidden rounded-2xl">
-        {images.map((m, i) => (
-          <MediaImg
-            key={i}
-            alt={m.alt}
-            className="aspect-square w-full object-cover"
-            src={m.src}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  if (n === 3) {
-    const [a, b, c] = images;
-    return (
-      <div className="mt-3 grid grid-cols-2 grid-rows-2 gap-1 overflow-hidden rounded-2xl">
-        <div className="row-span-2 min-h-[120px]">
-          <MediaImg alt={a.alt} className="h-full w-full object-cover" src={a.src} />
-        </div>
-        <div className="min-h-[59px]">
-          <MediaImg alt={b.alt} className="h-full w-full object-cover" src={b.src} />
-        </div>
-        <div className="min-h-[59px]">
-          <MediaImg alt={c.alt} className="h-full w-full object-cover" src={c.src} />
-        </div>
-      </div>
-    );
-  }
-
-  const four = images.slice(0, 4);
   return (
-    <div className="mt-3 grid grid-cols-2 grid-rows-2 gap-1 overflow-hidden rounded-2xl">
-      {four.map((m, i) => (
-        <MediaImg key={i} alt={m.alt} className="aspect-square w-full object-cover" src={m.src} />
+    <div className="mt-3 flex flex-col gap-1 overflow-hidden rounded-2xl border border-zinc-800">
+      {images.map((m, i) => (
+        <MediaImg key={i} alt={m.alt} src={m.src} />
       ))}
     </div>
   );

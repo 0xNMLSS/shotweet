@@ -7,7 +7,6 @@ services:
       POSTER_TTL_SECONDS: "3600"
       MAX_CONCURRENT_RENDERS: "2"
       INTERNAL_RENDER_HOST: "http://localhost:3000"
-      SHOTWEET_BRAND_REPO_URL: "https://github.com/0xNMLSS/shotweet"
     volumes:
       - posters:/app/tmp/posters
 

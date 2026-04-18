@@ -7,7 +7,7 @@ describe("twitter format helpers", () => {
     expect(formatCount(92000)).toBe("92K");
   });
 
-  it("formats ISO timestamps into zh-CN display text", () => {
-    expect(formatTweetTimestamp("2026-04-18T14:34:00.000Z")).toBe("下午 10:34 · 2026年4月18日");
+  it("formats ISO timestamps into en-US display text (Asia/Shanghai)", () => {
+    expect(formatTweetTimestamp("2026-04-18T14:34:00.000Z")).toBe("10:34 PM · Apr 18, 2026");
   });
 });

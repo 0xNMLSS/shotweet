@@ -6,13 +6,13 @@ export default function TweetStats({ stats }: { stats: TweetData["stats"] }) {
   return (
     <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-zinc-800 pt-3 text-[15px] text-zinc-500">
       <span>
-        <span className="font-medium text-zinc-300">{formatCount(stats.replies)}</span> 评论
+        <span className="font-medium text-zinc-300">{formatCount(stats.replies)}</span> replies
       </span>
       <span>
-        <span className="font-medium text-zinc-300">{formatCount(stats.retweets)}</span> 转发
+        <span className="font-medium text-zinc-300">{formatCount(stats.retweets)}</span> reposts
       </span>
       <span>
-        <span className="font-medium text-zinc-300">{formatCount(stats.likes)}</span> 赞
+        <span className="font-medium text-zinc-300">{formatCount(stats.likes)}</span> likes
       </span>
       <XLogoBadge className="ml-auto" />
     </div>

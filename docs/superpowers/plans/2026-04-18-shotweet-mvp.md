@@ -621,16 +621,12 @@ Expected: FAIL because the components do not exist.
 - [ ] **Step 3: Implement the D2 visual components and render page**
 
 ```tsx
-// components/BrandFooter.tsx
-export default function BrandFooter() {
-  const repoUrl = process.env.SHOTWEET_BRAND_REPO_URL ?? "https://github.com/0xNMLSS/shotweet";
-
+// components/BrandFooter.tsx (one plain-text line; optional SHOTWEET_FOOTER_TAGLINE)
+export default function BrandFooter({ className }: { className?: string }) {
+  const line = process.env.SHOTWEET_FOOTER_TAGLINE?.trim() || "shotweet from xxlemon · …";
   return (
-    <div className="mt-4 border-t border-zinc-800 pt-3 text-[10px] text-zinc-500">
-      shotweet from{" "}
-      <a className="underline decoration-zinc-700 underline-offset-2" href={repoUrl}>
-        xxlemon
-      </a>
+    <div className={clsx("mt-4 border-t border-zinc-800 pt-3", className)}>
+      <p className="text-[12px] font-medium text-zinc-300">{line}</p>
     </div>
   );
 }
@@ -1014,7 +1010,6 @@ services:
       POSTER_TTL_SECONDS: "3600"
       MAX_CONCURRENT_RENDERS: "2"
       INTERNAL_RENDER_HOST: "http://localhost:3000"
-      SHOTWEET_BRAND_REPO_URL: "https://github.com/0xNMLSS/shotweet"
     volumes:
       - posters:/app/tmp/posters
 

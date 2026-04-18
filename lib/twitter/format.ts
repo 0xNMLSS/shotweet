@@ -4,20 +4,20 @@ export function formatCount(value: number): string {
   return `${compact.replace(/\.0$/, "")}K`;
 }
 
-/** Poster timestamps are always formatted in Asia/Shanghai with zh-CN labels (design spec). */
+/** Poster timestamps: English labels, Asia/Shanghai for stable wall-clock across environments. */
 export function formatTweetTimestamp(iso: string): string {
   const date = new Date(iso);
-  const timeRaw = new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
+  const timeZone = "Asia/Shanghai";
+  const time = new Intl.DateTimeFormat("en-US", {
+    timeZone,
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
   }).format(date);
-  const time = timeRaw.replace(/^(下午|上午)(\d)/, "$1 $2");
-  const day = new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
+  const day = new Intl.DateTimeFormat("en-US", {
+    timeZone,
     year: "numeric",
-    month: "long",
+    month: "short",
     day: "numeric",
   }).format(date);
   return `${time} · ${day}`;

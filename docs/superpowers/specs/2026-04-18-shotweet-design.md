@@ -183,22 +183,20 @@ Mapped from scraper failures to human-readable messages, e.g.:
 - Receives the serialized `TweetData` (passed via internal cache keyed by `id`, not URL params, to avoid URL-length issues).
 - Renders `<TweetPoster data={...} />` using the locked visual style:
   - Background `#0a0a0f` with two extremely subtle radial gradients (blue top-right, purple bottom-left).
-  - Width fixed at **1080px**, height auto.
+  - **Aspect ratio policy**: width fixed at **1080px**; container is `flex flex-col` with `min-h-[1350px]` (4:5 floor) so short tweets render as a balanced mobile-friendly card with `BrandFooter` pinned to the bottom via `mt-auto`. Natural growth above the floor is unbounded — long tweets fall back to a long-screenshot PNG (no truncation).
   - Header: 40px circular avatar, bold name, blue verified check, `@handle` in muted gray.
   - Body: 15px / line-height 1.55 / color `#e7e9ea`. Entities (mentions, hashtags, URLs) styled in `#1d9bf0`.
-  - Media layout follows X's own grid:
-    - 1 image: full-width, rounded-12.
-    - 2 images: side-by-side.
-    - 3 images: large left, two stacked right.
-    - 4 images: 2×2 grid.
+  - Media layout: **all images are stacked vertically at full poster width (1080px)** with each image's natural aspect ratio preserved. The same single-column treatment applies to 1, 2, 3, or 4 images — chosen over X's mosaic grids because the poster is a tall mobile-friendly canvas where a single column reads more naturally and avoids cropping faces.
   - Quoted tweet: nested card with `1px solid #2f3336`, body text reduced to 13px, no nested stats.
-  - Timestamp line: `下午 H:MM · YYYY年M月D日`.
-  - Stats row above a top border: `<n> 评论 · <n> 转发 · <n> 赞`, with a subtle **X mark** (SVG, muted gray, ~16px) aligned to the **right end of the same row** (no separate overlay layer; included in the PNG screenshot).
-  - Brand footer (muted gray, 10px): copy **shotweet from xxlemon**, where **xxlemon** links to the public GitHub repository: `https://github.com/0xNMLSS/shotweet`.
+  - Timestamp line: English, e.g. `10:34 PM · Apr 18, 2026` (wall clock in `Asia/Shanghai` for stable output).
+  - Stats row above a top border: `<n> replies · <n> reposts · <n> likes`, with a subtle **X mark** (SVG, muted gray, ~16px) aligned to the **right end of the same row** (no separate overlay layer; included in the PNG screenshot).
+  - Brand footer — **one line of plain text** (no links), 12px `text-zinc-300` medium weight. Default copy: `shotweet from xxlemon · An app for better screenshots of your tweets.` Env `SHOTWEET_FOOTER_TAGLINE` replaces the **entire** line when set.
 - Fonts: PingFang SC on macOS during dev; Noto Sans SC + Noto Color Emoji installed in the Docker image for production parity.
 - The page exposes a `<div id="poster">` container that the screenshotter targets.
 
 ### 7.3 Screenshot (`lib/renderer/screenshot.ts`)
+
+Viewport is 1080×1920 (matches the 9:16 soft-target so the page lays out without forcing internal scroll for short posters; element-level screenshot still captures the full height for long ones).
 
 1. Reuse the same Playwright `Browser`.
 2. `page.goto('http://localhost:3000/render/<id>')` on the in-process Next.js server.
@@ -285,7 +283,7 @@ shotweet/
   - `POSTER_TTL_SECONDS` (default 3600) — cleanup age
   - `MAX_CONCURRENT_RENDERS` (default 2) — protects single-instance Chromium
   - `INTERNAL_RENDER_HOST` (default `http://localhost:3000`) — for the screenshot self-call
-  - `SHOTWEET_BRAND_REPO_URL` (default `https://github.com/0xNMLSS/shotweet`) — URL used for the **xxlemon** link in the poster footer
+  - `SHOTWEET_FOOTER_TAGLINE` (optional) — overrides the poster footer **single line** (plain text). If unset, a built-in English default is used.
 
 ## 11. Testing Strategy (high-level)
 
