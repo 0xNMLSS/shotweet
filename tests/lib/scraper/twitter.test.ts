@@ -2,13 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 jest.mock("@/lib/playwright/pool", () => ({
-  getBrowser: jest.fn(),
+  withBrowser: jest.fn(),
 }));
 
 import { scrapeTweet } from "@/lib/scraper/twitter";
-import { getBrowser } from "@/lib/playwright/pool";
+import { withBrowser } from "@/lib/playwright/pool";
 
-const mockedGetBrowser = jest.mocked(getBrowser);
+const mockedWithBrowser = jest.mocked(withBrowser);
 
 describe("scrapeTweet", () => {
   let fixtureHtml: string;
@@ -54,7 +54,7 @@ describe("scrapeTweet", () => {
       close,
     });
 
-    mockedGetBrowser.mockResolvedValue({ newContext } as never);
+    mockedWithBrowser.mockImplementation(async (callback) => callback({ newContext } as never));
   });
 
   it("normalizes the input url and returns TweetData", async () => {

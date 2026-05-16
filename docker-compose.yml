@@ -8,6 +8,7 @@ services:
       MAX_CONCURRENT_RENDERS: "2"
       INTERNAL_RENDER_HOST: "http://localhost:3000"
       POSTER_PIXEL_RATIO: "3"
+      PLAYWRIGHT_BROWSER_IDLE_MS: "10000"
     volumes:
       - posters:/app/tmp/posters
 

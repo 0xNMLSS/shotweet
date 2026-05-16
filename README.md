@@ -16,6 +16,8 @@ Internal rendering uses `INTERNAL_RENDER_HOST` (default `http://localhost:3000`)
 
 PNGs render at `POSTER_PIXEL_RATIO` (default **3**, clamped `[1, 3]`). The CSS layout stays at 1080 px wide, but Chromium rasterizes at 3× density for sharp text on @2x/@3x phones (a 1080×1350 CSS poster ships as a 3240×4050 PNG). Lower it to `2` (≈3-5 MB) or `1` (≈1-2 MB) when bandwidth matters; `width`/`height` in API responses always describe the physical PNG.
 
+Playwright keeps Chromium warm only briefly after scrape/render work, then closes it after `PLAYWRIGHT_BROWSER_IDLE_MS` (default **10000**) so small Docker hosts can reclaim memory between poster generations. Lower it to release memory faster; raise it if you prefer to avoid browser startup on nearby requests.
+
 Generated posters include a single-line plain-text brand footer (default: `shotweet from xxlemon · An app for better screenshots of your tweets.`). Override the whole line with `SHOTWEET_FOOTER_TAGLINE` in `.env.example`. A subtle X mark appears at the end of the engagement stats row inside the PNG; the homepage preview is the same image with no extra overlay.
 
 ## Local development

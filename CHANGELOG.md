@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Docker memory stays high after a poster request because the shared Playwright Chromium process never closed. The browser now shuts down after `PLAYWRIGHT_BROWSER_IDLE_MS` (default 10 seconds) of inactivity while still reusing it for nearby scrape/render work.
 - Views stuck at `0` when X only exposes the count inside a comma-separated engagement `aria-label` (e.g. `…, 69672 views`) on a wrapper without `role="group"` or `data-testid="analytics"` — parser now scans all `[aria-label]` nodes for `… views` / 次观看.
 - Stats parser: read reply / repost / like counts from `[data-testid="reply|retweet|like"]` aria-labels (previous selector missed `<button>` and tripped on the toolbar group's combined aria-label, producing `0 / 0` or three identical numbers). Also handles compact `1.2K` / `3M` / `1.5B` suffixes.
 - Avatar resolution: scraped `_normal.jpg` (48px) profile images are upgraded to `_400x400.jpg` so the 1080-wide poster avatar is sharp.
