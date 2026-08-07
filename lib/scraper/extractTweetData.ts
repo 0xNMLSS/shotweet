@@ -30,23 +30,155 @@ function absoluteStatusUrl(href: string | null | undefined): string {
   return `https://x.com${href.startsWith("/") ? href : `/${href}`}`;
 }
 
-/** First nested tweet card inside this node (excludes the root when it is itself a tweet). */
-function firstNestedTweetCard(tweet: Element): Element | null {
-  return tweet.querySelector('[data-testid="tweet"]');
+function metaContent(root: Element, itemprop: string): string {
+  return root.querySelector(`meta[itemprop="${itemprop}"]`)?.getAttribute("content")?.trim() ?? "";
 }
 
-function parseTweetNode(tweet: Element, url: string): TweetData {
-  const innerQuote = firstNestedTweetCard(tweet);
+/** First nested tweet card inside this node (excludes the root when it is itself a tweet). */
+function firstNestedTweetCard(tweet: Element): Element | null {
+  return tweet.querySelector('[data-testid="tweet"], article[data-tweet-id]');
+}
 
-  const parseCompactNumber = (raw: string): number => {
-    const match = raw.match(/([\d.,]+)\s*([KMB]?)/i);
-    if (!match) return 0;
-    const base = Number(match[1]!.replace(/,/g, ""));
-    if (Number.isNaN(base)) return 0;
-    const suffix = match[2]?.toUpperCase();
-    const factor = suffix === "K" ? 1_000 : suffix === "M" ? 1_000_000 : suffix === "B" ? 1_000_000_000 : 1;
-    return Math.round(base * factor);
+function isNewLayoutTweet(tweet: Element): boolean {
+  return tweet.hasAttribute("data-tweet-id") || Boolean(tweet.getAttribute("itemtype")?.includes("SocialMediaPosting"));
+}
+
+function parseCompactNumber(raw: string): number {
+  const match = raw.match(/([\d.,]+)\s*([KMB]?)/i);
+  if (!match) return 0;
+  const base = Number(match[1]!.replace(/,/g, ""));
+  if (Number.isNaN(base)) return 0;
+  const suffix = match[2]?.toUpperCase();
+  const factor = suffix === "K" ? 1_000 : suffix === "M" ? 1_000_000 : suffix === "B" ? 1_000_000_000 : 1;
+  return Math.round(base * factor);
+}
+
+function readSchemaInteractionCounts(tweet: Element, inScope: (node: Element) => boolean): TweetData["stats"] {
+  const stats = { replies: 0, retweets: 0, likes: 0, views: 0 };
+  const typeMap: Record<string, keyof typeof stats> = {
+    "https://schema.org/ReplyAction": "replies",
+    "https://schema.org/ShareAction": "retweets",
+    "https://schema.org/LikeAction": "likes",
+    "https://schema.org/ViewAction": "views",
   };
+
+  for (const block of Array.from(tweet.querySelectorAll('[itemprop="interactionStatistic"]')).filter(inScope)) {
+    const type = block.querySelector('[itemprop="interactionType"]')?.getAttribute("content") ?? "";
+    const key = typeMap[type];
+    if (!key) continue;
+    const raw = block.querySelector('[itemprop="userInteractionCount"]')?.getAttribute("content") ?? "";
+    const n = Number(raw);
+    if (Number.isFinite(n)) stats[key] = n;
+  }
+  return stats;
+}
+
+/** Display name from a profile link (quote cards have no schema.org author block). */
+function readDomDisplayName(tweet: Element, inScope: (node: Element) => boolean): string {
+  for (const a of Array.from(tweet.querySelectorAll("a[href]")).filter(inScope)) {
+    const href = a.getAttribute("href") || "";
+    if (href.includes("/status/") || href.includes("/hashtag/")) continue;
+    try {
+      const path = href.startsWith("http") ? new URL(href).pathname : href;
+      const parts = path.split("/").filter(Boolean);
+      if (parts.length !== 1) continue;
+    } catch {
+      continue;
+    }
+    const text = a.textContent?.trim() || "";
+    if (!text || text.startsWith("@")) continue;
+    return text;
+  }
+  return "";
+}
+
+function readDomHandle(tweet: Element, url: string, inScope: (node: Element) => boolean): string {
+  const statusLink = Array.from(tweet.querySelectorAll('a[href*="/status/"]')).find(inScope);
+  const fromStatus = handleFromStatusHref(statusLink?.getAttribute("href") || url);
+  if (fromStatus) return fromStatus;
+  for (const a of Array.from(tweet.querySelectorAll("a")).filter(inScope)) {
+    const text = a.textContent?.trim() || "";
+    if (text.startsWith("@") && text.length > 1) return text.slice(1);
+  }
+  return "";
+}
+
+function parseNewLayoutTweet(tweet: Element, url: string): TweetData {
+  const innerQuote = firstNestedTweetCard(tweet);
+  const inScope = (node: Element) => !innerQuote || !innerQuote.contains(node);
+
+  const authorEl = Array.from(tweet.querySelectorAll('[itemprop="author"]')).find(inScope) ?? null;
+  const body =
+    metaContent(tweet, "articleBody") ||
+    metaContent(tweet, "text") ||
+    tweet.querySelector('[data-testid="tweetText"]')?.textContent?.trim() ||
+    Array.from(tweet.querySelectorAll("div[dir='auto'], div[dir=\"auto\"]"))
+      .filter(inScope)
+      .map((el) => el.textContent?.trim() || "")
+      .find(Boolean) ||
+    "";
+
+  const mediaFromSchema = Array.from(tweet.querySelectorAll('[itemtype="https://schema.org/ImageObject"]'))
+    .filter(inScope)
+    .map((node) => {
+      const src =
+        node.querySelector('meta[itemprop="contentUrl"]')?.getAttribute("content") ||
+        node.querySelector('meta[itemprop="url"]')?.getAttribute("content") ||
+        "";
+      if (!src.includes("pbs.twimg.com/media")) return null;
+      return {
+        type: "image" as const,
+        src: upgradeMediaUrl(src),
+        alt: node.querySelector('meta[itemprop="description"]')?.getAttribute("content") ?? undefined,
+      };
+    })
+    .filter((m): m is NonNullable<typeof m> => Boolean(m));
+
+  const mediaFromImgs = Array.from(tweet.querySelectorAll('img[src*="pbs.twimg.com/media"]'))
+    .filter(inScope)
+    .map((img) => ({
+      type: "image" as const,
+      src: upgradeMediaUrl(img.getAttribute("src") ?? ""),
+      alt: img.getAttribute("alt") ?? undefined,
+    }));
+
+  const media = mediaFromSchema.length > 0 ? mediaFromSchema : mediaFromImgs;
+  const avatarRaw =
+    (authorEl && metaContent(authorEl, "image")) ||
+    Array.from(tweet.querySelectorAll('img[src*="profile_images"]'))
+      .filter(inScope)[0]
+      ?.getAttribute("src") ||
+    "";
+
+  const resolvedUrl = metaContent(tweet, "url") || url;
+
+  return {
+    id: tweet.getAttribute("data-tweet-id") || extractTweetId(url),
+    url: resolvedUrl,
+    author: {
+      name: (authorEl && metaContent(authorEl, "name")) || readDomDisplayName(tweet, inScope),
+      handle:
+        (authorEl && metaContent(authorEl, "alternateName")) ||
+        readDomHandle(tweet, resolvedUrl, inScope),
+      avatar: upgradeAvatarUrl(avatarRaw),
+      verified: Boolean(
+        Array.from(
+          tweet.querySelectorAll('[aria-label="Verified account"], [data-icon="icon-verified"]')
+        ).find(inScope)
+      ),
+    },
+    body: { text: body, entities: [] },
+    media,
+    stats: readSchemaInteractionCounts(tweet, inScope),
+    createdAt:
+      metaContent(tweet, "datePublished") ||
+      metaContent(tweet, "dateCreated") ||
+      new Date(0).toISOString(),
+  };
+}
+
+function parseLegacyTweetNode(tweet: Element, url: string): TweetData {
+  const innerQuote = firstNestedTweetCard(tweet);
 
   const readCount = (testId: string, segment: string) => {
     const buttons = Array.from(tweet.querySelectorAll(`[data-testid="${testId}"]`)).filter(
@@ -143,19 +275,34 @@ function parseTweetNode(tweet: Element, url: string): TweetData {
   };
 }
 
+function parseTweetNode(tweet: Element, url: string): TweetData {
+  return isNewLayoutTweet(tweet) ? parseNewLayoutTweet(tweet, url) : parseLegacyTweetNode(tweet, url);
+}
+
+function findTweetElements(document: Document): Element[] {
+  const byId = Array.from(document.querySelectorAll("article[data-tweet-id]"));
+  if (byId.length > 0) return byId;
+  return Array.from(document.querySelectorAll('[data-testid="tweet"]'));
+}
+
 export function extractTweetData(html: string, url: string): TweetData {
   const { JSDOM } = loadJSDOM();
   const dom = new JSDOM(html);
   const { document } = dom.window;
-  const allTweets = Array.from(document.querySelectorAll('[data-testid="tweet"]'));
+  const allTweets = findTweetElements(document);
   if (allTweets.length === 0) throw new Error("Tweet not found or inaccessible");
 
-  const mainEl = allTweets[0]!;
+  const tweetId = extractTweetId(url);
+  const mainEl =
+    allTweets.find((el) => el.getAttribute("data-tweet-id") === tweetId) ?? allTweets[0]!;
   const quotedEl = allTweets.find((el, index) => index > 0 && mainEl.contains(el));
 
   const main = parseTweetNode(mainEl, url);
   if (quotedEl) {
-    const quotedUrl = absoluteStatusUrl(quotedEl.querySelector('a[href*="/status/"]')?.getAttribute("href"));
+    const quotedUrl = absoluteStatusUrl(
+      quotedEl.querySelector('a[href*="/status/"]')?.getAttribute("href") ||
+        metaContent(quotedEl, "url")
+    );
     main.quoted = parseTweetNode(quotedEl, quotedUrl || url);
   }
   return main;

@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Scraping failed on X’s new logged-out status layout, which no longer renders `[data-testid="tweet"]`. The scraper now waits for `article[data-tweet-id]` as well, picks the focal tweet by status id (so parent/reply cards on the same page are ignored), and parses author/body/stats/media from schema.org microdata (`SocialMediaPosting` / `ImageObject` / `ViewAction`). Nested quote cards (no microdata) are parsed from the DOM, and their images are not attributed to the outer tweet. Legacy `data-testid` markup still works.
 - Docker memory stays high after a poster request because the shared Playwright Chromium process never closed. The browser now shuts down after `PLAYWRIGHT_BROWSER_IDLE_MS` (default 10 seconds) of inactivity while still reusing it for nearby scrape/render work.
 - Views stuck at `0` when X only exposes the count inside a comma-separated engagement `aria-label` (e.g. `…, 69672 views`) on a wrapper without `role="group"` or `data-testid="analytics"` — parser now scans all `[aria-label]` nodes for `… views` / 次观看.
 - Stats parser: read reply / repost / like counts from `[data-testid="reply|retweet|like"]` aria-labels (previous selector missed `<button>` and tripped on the toolbar group's combined aria-label, producing `0 / 0` or three identical numbers). Also handles compact `1.2K` / `3M` / `1.5B` suffixes.

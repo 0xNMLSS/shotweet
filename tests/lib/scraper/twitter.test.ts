@@ -63,4 +63,26 @@ describe("scrapeTweet", () => {
       author: { handle: "sama" },
     });
   });
+
+  it("waits for legacy or new-layout tweet containers", async () => {
+    const waitForSelector = jest.fn().mockResolvedValue(null);
+    const content = jest.fn().mockResolvedValue(fixtureHtml);
+    const close = jest.fn().mockResolvedValue(undefined);
+    const newPage = jest.fn().mockResolvedValue({
+      route: jest.fn(),
+      goto: jest.fn().mockResolvedValue(undefined),
+      waitForSelector,
+      content,
+    });
+    mockedWithBrowser.mockImplementation(async (callback) =>
+      callback({ newContext: jest.fn().mockResolvedValue({ newPage, close }) } as never)
+    );
+
+    await scrapeTweet("https://x.com/sama/status/1913240824012345678");
+
+    expect(waitForSelector).toHaveBeenCalledWith(
+      'article[data-tweet-id], [data-testid="tweet"]',
+      expect.objectContaining({ timeout: 15000 })
+    );
+  });
 });

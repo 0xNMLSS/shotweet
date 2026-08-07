@@ -18,7 +18,8 @@ export async function scrapeTweet(inputUrl: string) {
       });
 
       await page.goto(url, { waitUntil: "domcontentloaded" });
-      await page.waitForSelector('[data-testid="tweet"]', { timeout: 15000 });
+      // New logged-out X uses article[data-tweet-id] + schema.org; legacy still uses data-testid.
+      await page.waitForSelector('article[data-tweet-id], [data-testid="tweet"]', { timeout: 15000 });
       const html = await page.content();
 
       return extractTweetData(html, url);
