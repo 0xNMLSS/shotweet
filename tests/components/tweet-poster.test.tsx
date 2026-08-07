@@ -21,18 +21,24 @@ describe("TweetPoster", () => {
     expect(screen.getByText(/hello world/i)).toBeInTheDocument();
   });
 
-  it("applies the 4:5 minimum-height floor and pins the brand footer to the bottom", () => {
+  it("renders quoted media inside the quote card", () => {
+    render(<TweetPoster data={quoteTweet} />);
+    const img = screen.getByAltText("quoted photo") as HTMLImageElement;
+    expect(img.src).toContain("quoted-fixture.jpg");
+  });
+
+  it("sizes the poster to content instead of forcing a tall empty floor", () => {
     const { container } = render(<TweetPoster data={plainTweet} />);
     const poster = container.querySelector("#poster");
     expect(poster).not.toBeNull();
-    expect(poster!.className).toMatch(/min-h-\[1350px\]/);
     expect(poster!.className).toMatch(/\bflex\b/);
     expect(poster!.className).toMatch(/\bflex-col\b/);
+    expect(poster!.className).not.toMatch(/min-h-\[1350px\]/);
 
     const footer = screen
       .getByText(/shotweet from xxlemon · An app for better screenshots of your tweets\./i)
       .closest("div");
-    expect(footer?.className).toMatch(/mt-auto/);
+    expect(footer?.className).not.toMatch(/mt-auto/);
   });
 
   it("uses px-10 horizontal padding so dark side bands stay tight", () => {

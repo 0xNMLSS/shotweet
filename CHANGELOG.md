@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Quote-tweet images were scraped but omitted from the PNG: `QuoteCard` now renders nested media inside the quote frame.
+- Excess empty space under short posters: removed the forced `min-h-[1350px]` 4:5 floor and footer `mt-auto` pin so canvas height follows content.
 - Scraping failed on X’s new logged-out status layout, which no longer renders `[data-testid="tweet"]`. The scraper now waits for `article[data-tweet-id]` as well, picks the focal tweet by status id (so parent/reply cards on the same page are ignored), and parses author/body/stats/media from schema.org microdata (`SocialMediaPosting` / `ImageObject` / `ViewAction`). Nested quote cards (no microdata) are parsed from the DOM, and their images are not attributed to the outer tweet. Legacy `data-testid` markup still works.
 - Docker memory stays high after a poster request because the shared Playwright Chromium process never closed. The browser now shuts down after `PLAYWRIGHT_BROWSER_IDLE_MS` (default 10 seconds) of inactivity while still reusing it for nearby scrape/render work.
 - Views stuck at `0` when X only exposes the count inside a comma-separated engagement `aria-label` (e.g. `…, 69672 views`) on a wrapper without `role="group"` or `data-testid="analytics"` — parser now scans all `[aria-label]` nodes for `… views` / 次观看.

@@ -34,9 +34,8 @@ export async function renderPosterImage(renderId: string): Promise<{
   return withBrowser(async (browser) => {
     const pixelRatio = resolvePixelRatio();
     const context = await browser.newContext({
-      // Viewport >= the 4:5 minimum poster height so the page lays out without
-      // forcing an internal scroll for short tweets. Tall posters are captured
-      // via element screenshot which sees the full layout regardless of viewport.
+      // Tall enough for typical posters; element screenshot captures full
+      // content height even when the canvas grows past the viewport.
       viewport: { width: 1080, height: 1920 },
       // Retina-style rasterization: layout stays in 1080 CSS px but Chromium
       // paints each pixel `deviceScaleFactor`-times denser, so the resulting

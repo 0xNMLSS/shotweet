@@ -183,7 +183,7 @@ Mapped from scraper failures to human-readable messages, e.g.:
 - Receives the serialized `TweetData` (passed via internal cache keyed by `id`, not URL params, to avoid URL-length issues).
 - Renders `<TweetPoster data={...} />` using the locked visual style:
   - Background `#0a0a0f` with two extremely subtle radial gradients (blue top-right, purple bottom-left).
-  - **Aspect ratio policy**: width fixed at **1080px**; container is `flex flex-col` with `min-h-[1350px]` (4:5 floor) so short tweets render as a balanced mobile-friendly card with `BrandFooter` pinned to the bottom via `mt-auto`. Natural growth above the floor is unbounded — long tweets fall back to a long-screenshot PNG (no truncation).
+  - **Aspect ratio policy**: width fixed at **1080px**; height follows content (no forced 4:5 floor) so short tweets do not leave a large empty band above the brand footer. Long tweets still grow as long-screenshot PNGs (no truncation). Quote cards include nested media when present.
   - **Insets**: poster uses `px-10 py-12` (40px sides / 48px top-bottom). Earlier `px-16` left ~5.9% dark side bands per side which felt wasted on phone screens; the tighter inset cuts them to ~3.7% while still giving text comfortable breathing room.
   - Header: 40px circular avatar, bold name, blue verified check, `@handle` in muted gray.
   - Body: 15px / line-height 1.55 / color `#e7e9ea`. Entities (mentions, hashtags, URLs) styled in `#1d9bf0`.

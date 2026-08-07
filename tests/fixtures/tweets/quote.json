@@ -32,7 +32,13 @@
       "text": "hello world — a short note",
       "entities": []
     },
-    "media": [],
+    "media": [
+      {
+        "type": "image",
+        "src": "https://pbs.twimg.com/media/quoted-fixture.jpg?name=large",
+        "alt": "quoted photo"
+      }
+    ],
     "stats": {
       "replies": 0,
       "retweets": 0,
